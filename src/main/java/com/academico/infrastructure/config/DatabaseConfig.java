@@ -13,7 +13,7 @@ public class DatabaseConfig {
         this.url=System.getenv().getOrDefault("DB_URL","jdbc:postgresql://localhost:5432/sistema_gestion_academica");
         this.usuario=System.getenv().getOrDefault("DB_USER", "postgres");
         this.password =System.getenv().getOrDefault("DB_PASSWORD","123456");
-        System.out.println("[DatabaseConfig] Configuración cargada(una sola vez)");
+        System.out.println("[DatabaseConfig] Configuración cargada (una sola vez) ");
 
     }
     public static DatabaseConfig getInstance(){
