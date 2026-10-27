@@ -1,4 +1,5 @@
 package com.academico;
+import com.academico.application.validation.*;
 import com.academico.infrastructure.adapter.in.RepositoryFactory;
 import com.academico.infrastructure.adapter.out.observer.AuditoriaObserver;
 import com.academico.infrastructure.adapter.out.observer.CorreoObserver;
@@ -28,7 +29,10 @@ public class Main {
 
 
         //2. Nucleo de la aplicacion: caso de uso
-        EstudianteService service=new EstudianteService(repository);
+        ValidadorEstudiante validador=new ValidadorId();
+        validador.setSiguiente(new ValidadorNombre()).setSiguiente(new ValidadorCorreo()).setSiguiente(new ValidadorCorreoUnico(repository));
+        EstudianteService service=new EstudianteService(repository, validador);
+
         service.suscribir(new AuditoriaObserver());
         service.suscribir(new CorreoObserver());
 

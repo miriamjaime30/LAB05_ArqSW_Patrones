@@ -60,9 +60,13 @@ public class EstudianteUI {
 
         Estudiante estudiante =
                 new Estudiante(id, nombre, correo);
-        service.registrar(estudiante);
+        try {
+            service.registrar(estudiante);
 
-        System.out.println("Estudiante registrado.");
+            System.out.println("Estudiante registrado.");
+        }catch (IllegalArgumentException e){
+            System.out.println("No se pudo registrar: "+ e.getMessage());
+        }
 
     }
     private void listar(){
@@ -85,15 +89,19 @@ public class EstudianteUI {
         System.out.print("Nuevo correo: ");
         String correoAct = sc.nextLine();
 
-        boolean actualizado = service.actualizar(
-                new Estudiante(idAct, nombreAct, correoAct)
-        );
+        try {
+            boolean actualizado = service.actualizar(
+                    new Estudiante(idAct, nombreAct, correoAct)
+            );
 
-        System.out.println(
-                actualizado
-                        ? "Estudiante actualizado."
-                        : "Estudiante no encontrado."
-        );
+            System.out.println(
+                    actualizado
+                            ? "Estudiante actualizado."
+                            : "Estudiante no encontrado."
+            );
+        }catch (IllegalArgumentException e){
+            System.out.println("No se pudo actualizar: "+ e.getMessage());
+        }
     }
     private void eliminar(Scanner sc){
         System.out.print("ID a eliminar: ");
