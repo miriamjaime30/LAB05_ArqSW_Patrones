@@ -1,5 +1,7 @@
 package com.academico;
 import com.academico.infrastructure.adapter.in.RepositoryFactory;
+import com.academico.infrastructure.adapter.out.observer.AuditoriaObserver;
+import com.academico.infrastructure.adapter.out.observer.CorreoObserver;
 import com.academico.infrastructure.adapter.out.persistence.EstudianteRepositoryJson;
 import com.academico.infrastructure.adapter.out.persistence.EstudianteRepositoryPostgres;
 import com.academico.infrastructure.config.DatabaseConfig;
@@ -27,6 +29,8 @@ public class Main {
 
         //2. Nucleo de la aplicacion: caso de uso
         EstudianteService service=new EstudianteService(repository);
+        service.suscribir(new AuditoriaObserver());
+        service.suscribir(new CorreoObserver());
 
         // presentacion
         EstudianteUI estudianteUI=new EstudianteUI(service);
