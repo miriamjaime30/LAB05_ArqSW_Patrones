@@ -2,6 +2,7 @@ package com.academico.application.service;
 import com.academico.application.observer.EstudianteObserver;
 import com.academico.application.observer.TipoEvento;
 import com.academico.application.port.in.EstudianteUseCase;
+import com.academico.application.validation.ValidadorEstudiante;
 import com.academico.domain.model.Estudiante;
 //import com.academico.infrastructure.persistence.EstudianteRepositoryJson;
 import com.academico.domain.repository.EstudianteRepository;
@@ -14,10 +15,15 @@ import java.util.Optional;
 public class EstudianteService implements EstudianteUseCase {
 
     private final EstudianteRepository repository;
+    private final ValidadorEstudiante validador;
     private final List<EstudianteObserver> observadores=new ArrayList<>();
 
     public EstudianteService(EstudianteRepository repository) {
-        this.repository = repository;
+        this(repository, null);
+    }
+    public EstudianteService(EstudianteRepository repository, ValidadorEstudiante validador){
+        this.repository=repository;
+        this.validador=validador;
     }
     public void suscribir(EstudianteObserver observador){
         observadores.add(observador);
@@ -30,9 +36,15 @@ public class EstudianteService implements EstudianteUseCase {
             observador.notificar(tipo, estudiante);
         }
     }
+    private void validar(Estudiante estudiante){
+        if(validador != null){
+            validador.validar(estudiante);
+        }
+    }
 
     @Override
     public void registrar(Estudiante estudiante) {
+        validar(estudiante);
         repository.guardar(estudiante);
         notificarObservadores(TipoEvento.REGISTRADO, estudiante);
     }
@@ -44,6 +56,7 @@ public class EstudianteService implements EstudianteUseCase {
 
     @Override
     public boolean actualizar(Estudiante estudiante) {
+        validar(estudiante);
         boolean actualizado= repository.actualizar(estudiante);
         if (actualizado) {
             notificarObservadores(TipoEvento.ACTUALIZADO, estudiante);
