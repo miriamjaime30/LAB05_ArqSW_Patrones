@@ -2,6 +2,7 @@ package com.academico;
 import com.academico.infrastructure.adapter.in.RepositoryFactory;
 import com.academico.infrastructure.adapter.out.persistence.EstudianteRepositoryJson;
 import com.academico.infrastructure.adapter.out.persistence.EstudianteRepositoryPostgres;
+import com.academico.infrastructure.config.DatabaseConfig;
 import com.academico.presentation.EstudianteUI;
 
 import com.academico.application.service.EstudianteService;
@@ -13,6 +14,10 @@ public class Main {
 
     public static void main(String[] args) {
 
+        //Demostración del patrón Singleton
+        DatabaseConfig a=DatabaseConfig.getInstance();
+        DatabaseConfig b=DatabaseConfig.getInstance();
+        System.out.println("¿Misma instancia? " + (a == b));
         EstudianteRepository repository= RepositoryFactory.crear();
 
         // 1. Adaptador de salida: almacena en JSON
