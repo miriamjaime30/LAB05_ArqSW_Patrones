@@ -25,7 +25,7 @@ public class EstudianteService implements EstudianteUseCase {
     public void desuscribir(EstudianteObserver observador){
         observadores.remove(observador);
     }
-    public void notificarObservadores(TipoEvento tipo, Estudiante estudiante){
+    private void notificarObservadores(TipoEvento tipo, Estudiante estudiante){
         for(EstudianteObserver observador:observadores){
             observador.notificar(tipo, estudiante);
         }
