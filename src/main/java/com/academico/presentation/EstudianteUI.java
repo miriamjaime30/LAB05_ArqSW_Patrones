@@ -2,17 +2,22 @@ package com.academico.presentation;
 import com.academico.application.port.in.EstudianteUseCase;
 import com.academico.domain.model.Estudiante;
 import com.academico.application.service.EstudianteService;
+import com.academico.presentation.command.*;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import  java.util.Scanner;
 
 
 public class EstudianteUI {
 
-    private final EstudianteUseCase service;
+    private final Map<Integer, Comando> comandos= new LinkedHashMap<>();
 
     public EstudianteUI(EstudianteUseCase service){
-        //
-        this.service=service;
+        comandos.put(1, new RegistrarEstudianteComando(service));
+        comandos.put(2, new ListarEstudianteComando(service));
+        comandos.put(3, new ActualizarEstudianteComando(service));
+        comandos.put(4, new EliminarEstudianteComando(service));
     }
 
 
@@ -22,98 +27,24 @@ public class EstudianteUI {
         do {
 
             System.out.println("\n--- ESTUDIANTES ---");
-            System.out.println("1. Registrar");
-            System.out.println("2. Listar");
-            System.out.println("3. Actualizar");
-            System.out.println("4. Eliminar");
+            comandos.forEach((numero, comando)->
+                    System.out.println(numero + ". " + comando.getDescripcion()));
             System.out.println("0. Regresar");
             System.out.print("Opción: ");
 
             opcion = sc.nextInt();
             sc.nextLine();
 
-            switch (opcion) {
-                case 1->registrar(sc);
-                case 2->listar();
-                case 3->actualizar(sc);
-                case 4->eliminar (sc);
-                case 0 ->
-                        System.out.println("Regresando...");
-                default ->
-                        System.out.println("Opción no válida.");
+            if(opcion==0){
+                System.out.println("Regresando...");
+            }else{
+                Comando comando=comandos.get(opcion);
+                if(comando != null){
+                    comando.ejecutar(sc);
+                }else{
+                    System.out.println("Opción no válida");
+                }
             }
         } while (opcion != 0);
-    }
-
-
-    // agregar  metodos privados
-    private void registrar(Scanner sc){
-        System.out.print("ID: ");
-        int id = sc.nextInt();
-        sc.nextLine();
-
-        System.out.print("Nombre: ");
-        String nombre = sc.nextLine();
-
-        System.out.print("Correo: ");
-        String correo = sc.nextLine();
-
-        Estudiante estudiante =
-                new Estudiante(id, nombre, correo);
-        try {
-            service.registrar(estudiante);
-
-            System.out.println("Estudiante registrado.");
-        }catch (IllegalArgumentException e){
-            System.out.println("No se pudo registrar: "+ e.getMessage());
-        }
-
-    }
-    private void listar(){
-        service.listar().forEach(e ->
-                System.out.println(
-                        e.getId() + " - " +
-                                e.getNombre() + " - " +
-                                e.getCorreo()
-                )
-        );
-    }
-    private void actualizar(Scanner sc){
-        System.out.print("ID del estudiante: ");
-        int idAct = sc.nextInt();
-        sc.nextLine();
-
-        System.out.print("Nuevo nombre: ");
-        String nombreAct = sc.nextLine();
-
-        System.out.print("Nuevo correo: ");
-        String correoAct = sc.nextLine();
-
-        try {
-            boolean actualizado = service.actualizar(
-                    new Estudiante(idAct, nombreAct, correoAct)
-            );
-
-            System.out.println(
-                    actualizado
-                            ? "Estudiante actualizado."
-                            : "Estudiante no encontrado."
-            );
-        }catch (IllegalArgumentException e){
-            System.out.println("No se pudo actualizar: "+ e.getMessage());
-        }
-    }
-    private void eliminar(Scanner sc){
-        System.out.print("ID a eliminar: ");
-        int idEliminar = sc.nextInt();
-
-        boolean eliminado =
-                service.eliminar(idEliminar);
-
-        System.out.println(
-                eliminado
-                        ? "Estudiante eliminado."
-                        : "Estudiante no encontrado."
-        );
     }
 }
