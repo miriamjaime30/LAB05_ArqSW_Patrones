@@ -143,3 +143,78 @@ Salida al eliminar un estudiante (se ven juntos el Decorator y el Observer):
 [CORREO] Para: miriam@unsch.com | Tu registro fue eliminado del sistema.
 Estudiante eliminado.
 ```
+
+
+## 5. Chain of Responsibility (patrón adicional)
+
+Antes de registrar o actualizar, el estudiante pasa por una cadena de validadores. Cada eslabón comprueba una sola regla: si se cumple, pasa la solicitud al siguiente; si no, la cadena se corta con un mensaje claro. La cadena se arma en `Main` y `EstudianteService` solo conoce el primer eslabón, así que se pueden agregar o quitar reglas sin tocar el servicio. Además evita que un ID repetido cierre el programa, porque la interfaz captura el error y lo muestra.
+
+`ValidadorId` → `ValidadorNombre` → `ValidadorCorreo` → `ValidadorCorreoUnico`
+
+```mermaid
+classDiagram
+    class ValidadorEstudiante {
+        <<abstract>>
+        -ValidadorEstudiante siguiente
+        +setSiguiente(ValidadorEstudiante) ValidadorEstudiante
+        +validar(Estudiante)
+        #comprobar(Estudiante)*
+    }
+    class ValidadorId
+    class ValidadorNombre
+    class ValidadorCorreo
+    class ValidadorCorreoUnico
+    ValidadorEstudiante <|-- ValidadorId
+    ValidadorEstudiante <|-- ValidadorNombre
+    ValidadorEstudiante <|-- ValidadorCorreo
+    ValidadorEstudiante <|-- ValidadorCorreoUnico
+    ValidadorEstudiante o--> ValidadorEstudiante : siguiente
+    EstudianteService ..> ValidadorEstudiante : usa
+```
+
+Casos de prueba, uno por eslabón:
+
+| ID | Nombre | Correo | Resultado |
+|---|---|---|---|
+| -1 | Ana | ana@unsch.edu.pe | El ID no puede ser negativo. |
+| 10 | (vacío) | ana@unsch.edu.pe | El nombre no puede estar vacío. |
+| 10 | Ana | ana-sin-arroba | El correo no tiene un formato válido. |
+| 10 | Ana | alberto@unsch.edu.pe | Ya existe un estudiante con ese correo. |
+| 10 | Ana | ana@unsch.edu.pe | Registro exitoso |
+
+## 6. Command (patrón adicional)
+
+Cada opción del menú de estudiantes es un objeto que implementa `Comando`. `EstudianteUI` es el invocador: guarda los comandos en un mapa y ejecuta el que elige el usuario, sin un `switch` fijo. `EstudianteUseCase` es el receptor, que hace el trabajo real. Para agregar una opción al menú basta crear una clase nueva y registrarla en el mapa.
+
+```mermaid
+classDiagram
+    class Comando {
+        <<interface>>
+        +getDescripcion() String
+        +ejecutar(Scanner)
+    }
+    class RegistrarEstudianteComando
+    class ListarEstudianteComando
+    class ActualizarEstudianteComando
+    class EliminarEstudianteComando
+    class EstudianteUI {
+        -Map comandos
+        +mostrarMenu(Scanner)
+    }
+    class EstudianteUseCase {
+        <<interface>>
+    }
+    Comando <|.. RegistrarEstudianteComando
+    Comando <|.. ListarEstudianteComando
+    Comando <|.. ActualizarEstudianteComando
+    Comando <|.. EliminarEstudianteComando
+    EstudianteUI o--> Comando : ejecuta
+    RegistrarEstudianteComando ..> EstudianteUseCase : receptor
+    ListarEstudianteComando ..> EstudianteUseCase : receptor
+    ActualizarEstudianteComando ..> EstudianteUseCase : receptor
+    EliminarEstudianteComando ..> EstudianteUseCase : receptor
+```
+
+## Historial de trabajo
+
+Cada patrón se desarrolló en su propia rama (`feature/singleton`, `feature/decorator`, `feature/observer`, `feature/chain-validacion`, `feature/command`) y se integró a `master` con un commit de merge.
