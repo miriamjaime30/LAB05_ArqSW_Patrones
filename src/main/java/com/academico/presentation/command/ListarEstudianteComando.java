@@ -16,7 +16,7 @@ public class ListarEstudianteComando implements Comando{
     }
     @Override
     public void ejecutar(Scanner sc){
-        service.listar().forEach(e->System.out.print(e.getId() + " - "
+        service.listar().forEach(e->System.out.println(e.getId() + " - "
                 + e.getNombre() + " - " + e.getCorreo()));
     }
 }
