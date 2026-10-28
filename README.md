@@ -68,3 +68,78 @@ Salida de la demostración en `Main`:
 [DatabaseConfig] Configuración cargada (una sola vez).
 ¿Misma instancia? true
 ```
+
+
+## 3. Decorator
+
+`EstudianteRepositoryLogger` implementa la misma interfaz que el repositorio que envuelve (`EstudianteRepository`) y registra cada operación antes y después de delegarla. Así se añade una funcionalidad nueva sin modificar `EstudianteRepositoryJson`, `EstudianteRepositoryPostgres` ni `EstudianteService`. `RepositoryFactory` entrega el repositorio ya decorado.
+
+```mermaid
+classDiagram
+    class EstudianteRepository {
+        <<interface>>
+        +guardar(Estudiante)
+        +listar() List
+        +buscarPorId(int) Optional
+        +actualizar(Estudiante) boolean
+        +eliminar(int) boolean
+    }
+    class EstudianteRepositoryJson
+    class EstudianteRepositoryPostgres
+    class EstudianteRepositoryLogger {
+        -EstudianteRepository delegado
+    }
+    EstudianteRepository <|.. EstudianteRepositoryJson
+    EstudianteRepository <|.. EstudianteRepositoryPostgres
+    EstudianteRepository <|.. EstudianteRepositoryLogger
+    EstudianteRepositoryLogger o--> EstudianteRepository : envuelve
+```
+
+Salida al listar estudiantes:
+
+```
+[LOG] listar
+[LOG] listar: 3 registro(s)
+```
+
+## 4. Observer
+
+`EstudianteService` actúa como publicador: cuando se registra, actualiza o elimina un estudiante, notifica a todos sus suscriptores. Los observadores concretos son `AuditoriaObserver` (deja constancia con fecha y hora) y `CorreoObserver` (simula el envío de un correo). Se suscriben desde `Main`, y el servicio no conoce sus clases concretas, solo la interfaz `EstudianteObserver`.
+
+```mermaid
+classDiagram
+    class EstudianteService {
+        -List observadores
+        +suscribir(EstudianteObserver)
+        +desuscribir(EstudianteObserver)
+        -notificarObservadores(TipoEvento, Estudiante)
+    }
+    class EstudianteObserver {
+        <<interface>>
+        +notificar(TipoEvento, Estudiante)
+    }
+    class TipoEvento {
+        <<enumeration>>
+        REGISTRADO
+        ACTUALIZADO
+        ELIMINADO
+    }
+    class AuditoriaObserver
+    class CorreoObserver
+    EstudianteService o--> EstudianteObserver : notifica
+    EstudianteObserver <|.. AuditoriaObserver
+    EstudianteObserver <|.. CorreoObserver
+    EstudianteObserver ..> TipoEvento
+```
+
+Salida al eliminar un estudiante (se ven juntos el Decorator y el Observer):
+
+```
+[LOG] buscarPorId -> 3
+[LOG] buscarPorId: encontrado
+[LOG] eliminar -> 3
+[LOG] eliminar: éxito
+[AUDITORÍA] 27/10/2026 10:22:34 - ELIMINADO - id=3, nombre=Miriam
+[CORREO] Para: miriam@unsch.com | Tu registro fue eliminado del sistema.
+Estudiante eliminado.
+```
